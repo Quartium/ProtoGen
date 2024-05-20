@@ -1,0 +1,25 @@
+<div class="image-container" *ngIf="images.length > 0">
+    <img [src]="currentImageSrc" alt="Image" class="img-fluid" (load)="onImageLoad($event)">
+    <canvas #canvasElement class="drawing-canvas" [appHotspotDrawing]="currentImage"
+        (hotspotClicked)="showHotspotModal($event)"></canvas>
+</div>
+
+<div class="buttons-group">
+    <div>
+        <button (click)="goBack()" class="button-secondary">Back</button>
+        <button (click)="clearAllHotspots()" class="button-danger">Clear All</button>
+    </div>
+    <div>
+        <button (click)="previousImage()" [disabled]="currentIndex === 0" class="button-secondary">&larr;</button>
+        <button (click)="nextImage()" [disabled]="currentIndex === images.length - 1"
+            class="button-secondary">&rarr;</button>
+    </div>
+    <div>
+        <button (click)="generateHtmlFile()" class="button-primary">Generate HTML</button>
+    </div>
+</div>
+
+<app-modal [showModal]="showModal" [hotspotIndex]="selectedHotspotIndex" [images]="images"
+    [selectedImageName]="selectedHotspotImageName" (close)="closeModal()"
+    (selectionChange)="handleSelectionChange($event)">
+</app-modal>

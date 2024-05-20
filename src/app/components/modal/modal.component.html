@@ -1,0 +1,23 @@
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': showModal}" style="display: block;"
+    *ngIf="showModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Image selection</h3>
+                <button type="button" class="button-danger" (click)="closeModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="imageSelect">Select an Image:</label>
+                <select id="imageSelect" [(ngModel)]="selectedImageName">
+                    <option *ngFor="let image of images" [value]="image.file.name">{{ image.file.name }}</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="button-primary" (click)="saveSelection()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showModal"></div>

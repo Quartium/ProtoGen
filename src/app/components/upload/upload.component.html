@@ -1,0 +1,24 @@
+<div class="button-group">
+    <button (click)="clearAll()" *ngIf="images.length !== 0" class="button-danger">Delete All</button>
+    <button (click)="goToViewer()" *ngIf="images.length !== 0" class="button-primary">View screens</button>
+    <button (click)="fileInput.click()" class="button-secondary">+ Add screens</button>
+    <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden>
+</div>
+<div class="upload-container" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+    <div class="drag-here" *ngIf="images.length === 0">
+        <h4>Drag and drop screens here</h4>
+        <p>Pull in any PNG, JPG, or GIF to get started with vibrant imagery.</p>
+        <button (click)="fileInput.click()" class="button-secondary">Browse your files</button>
+    </div>
+    <div class="thumbnail-container" *ngIf="images.length !== 0">
+        <div class="thumbnail" *ngFor="let image of images; let i = index" (click)="selectImage(i)">
+            <div class="image">
+                <img [src]="image.src" alt="Thumbnail">
+                <div class="overlay">
+                    <button class="delete-button button-danger" (click)="removeImage(i, $event)">X</button>
+                </div>
+            </div>
+            <div class="filename">{{ image.file.name }}</div>
+        </div>
+    </div>
+</div>

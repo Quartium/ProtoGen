@@ -1,1 +1,75 @@
 /* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    background: rgb(247, 247, 248);
+}
+
+.delete-box {
+    cursor: pointer;
+    background: rgb(220, 30, 62);
+    color: white;
+    height: 15px;
+    width: 15px;
+    border-radius: 8px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Global button styles */
+button {
+    height: 32px;
+    padding: 0 18px;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: unset;
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 500;
+    box-shadow: rgb(74, 74, 79) 0px 0px 0px 1px inset;
+    cursor: pointer;
+}
+
+/* Primary Button */
+.button-primary {
+    color: #fff;
+    background-color: #3b39e8;
+    box-shadow: unset;
+}
+
+.button-primary:hover {
+    box-shadow: 0 6px 10px 0 rgba(53, 60, 238, 0.3), 0 2px 4px 0 rgba(53, 60, 238, 0.4);
+}
+
+/* Secondary Button */
+.button-secondary {
+    color: rgb(74, 74, 79);
+    background-color: transparent;
+}
+
+.button-secondary:hover {
+    background: rgb(242, 242, 243);
+    box-shadow: rgb(29, 29, 31) 0px 0px 0px 1px inset;
+}
+
+/* Danger Button */
+.button-danger {
+    background-color: rgb(220, 30, 62);
+    box-shadow: rgb(220, 30, 62) 0px 0px 0px 1px inset;
+    color: #fff;
+}
+
+.button-danger:hover {
+    background: rgb(182, 25, 52);
+    box-shadow: rgb(182, 25, 52) 0px 0px 0px 1px inset;
+}
