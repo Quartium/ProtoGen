@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { ImageService } from '../../services/image.service';
 import { HotspotDrawingDirective } from '../../directives/hotspot-drawing.directive';
 import { HtmlGenerationService } from '../../services/html-generation.service';
-import { Hotspot } from '../../models/hotspot.model';
 import { ImageData } from '../../models/image-data.model';
 
 @Component({
@@ -23,6 +22,7 @@ export class ViewerComponent implements OnInit, AfterViewInit {
   showModal: boolean = false;
   selectedHotspotIndex: number | null = null;
   selectedHotspotImageName: string | null = null;
+  currentImageName: string | null = null;
 
   constructor(
     private router: Router,
@@ -56,6 +56,7 @@ export class ViewerComponent implements OnInit, AfterViewInit {
     this.currentIndex = index;
     this.currentImageSrc = this.images[index].src;
     this.currentImage = this.images[index];
+    this.currentImageName = this.currentImage?.file.name || null;
     if (this.canvasElement) {
       this.drawHotspots();
     }

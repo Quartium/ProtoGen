@@ -20,6 +20,6 @@
 </div>
 
 <app-modal [showModal]="showModal" [hotspotIndex]="selectedHotspotIndex" [images]="images"
-    [selectedImageName]="selectedHotspotImageName" (close)="closeModal()"
+    [selectedImageName]="selectedHotspotImageName" [currentImageName]="currentImageName" (close)="closeModal()"
     (selectionChange)="handleSelectionChange($event)">
 </app-modal>

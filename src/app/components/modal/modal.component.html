@@ -11,7 +11,8 @@
             <div class="modal-body">
                 <label for="imageSelect">Select an Image:</label>
                 <select id="imageSelect" [(ngModel)]="selectedImageName">
-                    <option *ngFor="let image of images" [value]="image.file.name">{{ image.file.name }}</option>
+                    <option *ngFor="let image of filteredImages" [value]="image.file.name">{{ image.file.name }}
+                    </option>
                 </select>
             </div>
             <div class="modal-footer">
