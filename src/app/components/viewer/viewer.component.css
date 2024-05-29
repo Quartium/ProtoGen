@@ -53,3 +53,7 @@
 .buttons-group > div:last-child {
     justify-content: flex-end;
 }
+
+.resize-handle {
+  position: absolute;
+}
