@@ -8,7 +8,8 @@ import { ImageData } from '../models/image-data.model';
 })
 export class HotspotDrawingDirective implements OnChanges {
   @Input('appHotspotDrawing') image: ImageData | undefined;
-  @Output() hotspotClicked = new EventEmitter<number>();
+  @Input() mode: 'build' | 'play' = 'build';
+  @Output() hotspotClicked = new EventEmitter<Hotspot>();
 
   private isDrawing = false;
   private isDragging = false;
@@ -25,17 +26,38 @@ export class HotspotDrawingDirective implements OnChanges {
   private resizeHandles: HTMLDivElement[] = [];
   private dragThreshold = 5;
   private hasDragged = false;
+  private isDrawingEnabled = true;
 
-  constructor(private el: ElementRef<HTMLCanvasElement>, private imageService: ImageService, private renderer: Renderer2) {}
+  constructor(private el: ElementRef<HTMLCanvasElement>, private imageService: ImageService, private renderer: Renderer2) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['image']) {
       this.drawExistingHotspots();
     }
+    if (changes['mode']) {
+      this.clearDeleteButtons();
+      this.drawExistingHotspots();
+    }
+  }
+
+  disableDrawing() {
+    this.isDrawingEnabled = false;
+  }
+
+  enableDrawing() {
+    this.isDrawingEnabled = true;
   }
 
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
+    if (this.mode === 'play') {
+      const hotspotIndex = this.getHotspotAtPosition(event.offsetX, event.offsetY);
+      if (hotspotIndex !== null) {
+        this.hotspotClicked.emit(this.image!.hotspots[hotspotIndex]);
+      }
+      return;
+    }
+
     const canvas = this.el.nativeElement;
     const rect = canvas.getBoundingClientRect();
     this.startX = event.clientX - rect.left;
@@ -45,10 +67,12 @@ export class HotspotDrawingDirective implements OnChanges {
     if (this.image) {
       const resizeHandleIndex = this.getResizeHandleAtPosition(this.startX, this.startY);
       if (resizeHandleIndex !== null) {
-        this.isResizing = true;
-        this.resizedHotspotIndex = resizeHandleIndex;
-        this.resizeStartX = this.startX;
-        this.resizeStartY = this.startY;
+        if (this.isDrawingEnabled) {
+          this.isResizing = true;
+          this.resizedHotspotIndex = resizeHandleIndex;
+          this.resizeStartX = this.startX;
+          this.resizeStartY = this.startY;
+        }
       } else {
         const hotspotIndex = this.getHotspotAtPosition(this.startX, this.startY);
         if (hotspotIndex !== null) {
@@ -56,7 +80,7 @@ export class HotspotDrawingDirective implements OnChanges {
           this.draggedHotspotIndex = hotspotIndex;
           this.dragStartX = this.startX;
           this.dragStartY = this.startY;
-        } else {
+        } else if (this.isDrawingEnabled) {
           this.isDrawing = true;
         }
       }
@@ -65,6 +89,8 @@ export class HotspotDrawingDirective implements OnChanges {
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
+    if (this.mode === 'play') return;
+
     if (!this.isDrawing && !this.isDragging && !this.isResizing) {
       this.setCursorStyle(event);
       return;
@@ -113,6 +139,8 @@ export class HotspotDrawingDirective implements OnChanges {
 
   @HostListener('mouseup', ['$event'])
   onMouseUp(event: MouseEvent) {
+    if (this.mode === 'play') return;
+
     if (this.isDrawing) {
       this.isDrawing = false;
 
@@ -146,7 +174,7 @@ export class HotspotDrawingDirective implements OnChanges {
           this.drawExistingHotspots();
           if (!this.hasDragged) {
             console.log('Hotspot drawn, index:', this.image!.hotspots!.length - 1);
-            this.hotspotClicked.emit(this.image!.hotspots!.length - 1);
+            this.hotspotClicked.emit(this.image!.hotspots![this.image!.hotspots!.length - 1]);
           }
         });
       }
@@ -156,7 +184,7 @@ export class HotspotDrawingDirective implements OnChanges {
       this.isDragging = false;
       if (!this.hasDragged && this.draggedHotspotIndex !== null) {
         console.log('Hotspot clicked, index:', this.draggedHotspotIndex);
-        this.hotspotClicked.emit(this.draggedHotspotIndex);
+        this.hotspotClicked.emit(this.image!.hotspots![this.draggedHotspotIndex]);
       }
       this.draggedHotspotIndex = null;
       if (this.image) {
@@ -179,6 +207,8 @@ export class HotspotDrawingDirective implements OnChanges {
 
   @HostListener('mouseleave', ['$event'])
   onMouseLeave(event: MouseEvent) {
+    if (this.mode === 'play') return;
+
     if (this.isDrawing || this.isDragging || this.isResizing) {
       this.isDrawing = false;
       this.isDragging = false;
@@ -195,12 +225,20 @@ export class HotspotDrawingDirective implements OnChanges {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    if (this.getResizeHandleAtPosition(x, y) !== null) {
-      this.renderer.setStyle(canvas, 'cursor', 'nwse-resize');
-    } else if (this.getHotspotAtPosition(x, y) !== null) {
-      this.renderer.setStyle(canvas, 'cursor', 'pointer');
+    if (this.mode === 'build') {
+      if (this.getResizeHandleAtPosition(x, y) !== null) {
+        this.renderer.setStyle(canvas, 'cursor', 'nwse-resize');
+      } else if (this.getHotspotAtPosition(x, y) !== null) {
+        this.renderer.setStyle(canvas, 'cursor', 'pointer');
+      } else {
+        this.renderer.setStyle(canvas, 'cursor', 'default');
+      }
     } else {
-      this.renderer.setStyle(canvas, 'cursor', 'default');
+      if (this.getHotspotAtPosition(x, y) !== null) {
+        this.renderer.setStyle(canvas, 'cursor', 'pointer');
+      } else {
+        this.renderer.setStyle(canvas, 'cursor', 'default');
+      }
     }
   }
 
@@ -212,10 +250,7 @@ export class HotspotDrawingDirective implements OnChanges {
     if (!context) return;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    this.deleteButtons.forEach(button => this.renderer.removeChild(canvas.parentElement, button));
-    this.deleteButtons = [];
-    this.resizeHandles.forEach(handle => this.renderer.removeChild(canvas.parentElement, handle));
-    this.resizeHandles = [];
+    this.clearDeleteButtons();
 
     const hotspots = this.image.hotspots || [];
     hotspots.forEach((hotspot, index) => {
@@ -224,8 +259,10 @@ export class HotspotDrawingDirective implements OnChanges {
       context.strokeRect(hotspot.x, hotspot.y, hotspot.width, hotspot.height);
       context.fillStyle = 'rgba(0, 111, 255, 0.2)';
       context.fillRect(hotspot.x, hotspot.y, hotspot.width, hotspot.height);
-      this.createDeleteButton(hotspot, index);
-      this.createResizeHandle(hotspot, index);
+      if (this.mode === 'build') {
+        this.createDeleteButton(hotspot, index);
+        this.createResizeHandle(hotspot, index);
+      }
     });
   }
 
@@ -264,7 +301,7 @@ export class HotspotDrawingDirective implements OnChanges {
   }
 
   private getResizeHandleAtPosition(x: number, y: number): number | null {
-    if (!this.image) return null;
+    if (!this.image || this.mode === 'play') return null;
     const hotspots = this.image.hotspots || [];
     for (let i = 0; i < hotspots.length; i++) {
       const hotspot = hotspots[i];

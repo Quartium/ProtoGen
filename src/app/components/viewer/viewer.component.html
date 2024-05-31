@@ -1,8 +1,13 @@
 <div class="image-container" *ngIf="images.length > 0">
     <img [src]="currentImageSrc" alt="Image" class="img-fluid" (load)="onImageLoad($event)">
-    <canvas #canvasElement class="drawing-canvas" [appHotspotDrawing]="currentImage"
-        (hotspotClicked)="showHotspotModal($event)"></canvas>
+    <canvas #canvasElement class="drawing-canvas" [appHotspotDrawing]="currentImage" [mode]="mode"
+        (hotspotClicked)="onHotspotClick($event)"></canvas>
 </div>
+
+<button (click)="previousImage()" [disabled]="currentIndex === 0"
+    class="button-secondary navigation-button left">&larr;</button>
+<button (click)="nextImage()" [disabled]="currentIndex === images.length - 1"
+    class="button-secondary navigation-button right">&rarr;</button>
 
 <div class="buttons-group">
     <div>
@@ -10,9 +15,8 @@
         <button (click)="clearAllHotspots()" class="button-danger">Clear All</button>
     </div>
     <div>
-        <button (click)="previousImage()" [disabled]="currentIndex === 0" class="button-secondary">&larr;</button>
-        <button (click)="nextImage()" [disabled]="currentIndex === images.length - 1"
-            class="button-secondary">&rarr;</button>
+        <button (click)="switchToBuildMode()" [disabled]="mode === 'build'" class="button-secondary">Build</button>
+        <button (click)="switchToPlayMode()" [disabled]="mode === 'play'" class="button-secondary">Play</button>
     </div>
     <div>
         <button (click)="generateHtmlFile()" class="button-primary">Generate HTML</button>

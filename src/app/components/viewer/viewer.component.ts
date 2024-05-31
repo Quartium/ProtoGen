@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ImageService } from '../../services/image.service';
-import { HotspotDrawingDirective } from '../../directives/hotspot-drawing.directive';
 import { HtmlGenerationService } from '../../services/html-generation.service';
 import { ImageData } from '../../models/image-data.model';
+import { Hotspot } from '../../models/hotspot.model';
 
 @Component({
   selector: 'app-viewer',
@@ -17,12 +17,13 @@ export class ViewerComponent implements OnInit, AfterViewInit {
   currentImage: ImageData | undefined;
 
   @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
-  @ViewChild(HotspotDrawingDirective) HotspotDrawingDirective!: HotspotDrawingDirective;
 
   showModal: boolean = false;
   selectedHotspotIndex: number | null = null;
   selectedHotspotImageName: string | null = null;
   currentImageName: string | null = null;
+
+  mode: 'build' | 'play' = 'build';
 
   constructor(
     private router: Router,
@@ -100,7 +101,6 @@ export class ViewerComponent implements OnInit, AfterViewInit {
       this.currentImage.hotspots = [];
       this.imageService.updateImage(this.currentImage).subscribe(() => {
         this.drawHotspots();
-        this.HotspotDrawingDirective.clearDeleteButtons();
       });
     }
   }
@@ -128,10 +128,12 @@ export class ViewerComponent implements OnInit, AfterViewInit {
   }
 
   showHotspotModal(index: number) {
-    console.log('Showing modal for hotspot index:', index);
-    this.selectedHotspotIndex = index;
-    this.selectedHotspotImageName = this.currentImage?.hotspots![index].selectedImageName || null;
-    this.showModal = true;
+    if (this.mode === 'build') {
+      console.log('Showing modal for hotspot index:', index);
+      this.selectedHotspotIndex = index;
+      this.selectedHotspotImageName = this.currentImage?.hotspots![index].selectedImageName || null;
+      this.showModal = true;
+    }
   }
 
   closeModal() {
@@ -150,5 +152,25 @@ export class ViewerComponent implements OnInit, AfterViewInit {
   generateHtmlFile() {
     const htmlContent = this.htmlGenerationService.generateHtml(this.images);
     this.htmlGenerationService.downloadHtmlFile(htmlContent);
+  }
+
+  switchToPlayMode() {
+    this.mode = 'play';
+  }
+
+  switchToBuildMode() {
+    this.mode = 'build';
+  }
+
+  onHotspotClick(hotspot: Hotspot) {
+    if (this.mode === 'play' && hotspot.selectedImageName) {
+      const targetIndex = this.images.findIndex(image => image.file.name === hotspot.selectedImageName);
+      if (targetIndex !== -1) {
+        this.loadImage(targetIndex);
+      }
+    } else if (this.mode === 'build') {
+      const index = this.currentImage?.hotspots?.indexOf(hotspot) || 0;
+      this.showHotspotModal(index);
+    }
   }
 }

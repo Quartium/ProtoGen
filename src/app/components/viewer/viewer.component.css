@@ -39,21 +39,31 @@
     padding: 24px;
 }
 
-.buttons-group > div {
+.buttons-group>div {
     display: flex;
     align-items: center;
     gap: 24px;
     flex: 1;
 }
 
-.buttons-group > div:nth-child(2) {
+.buttons-group>div:nth-child(2) {
     justify-content: center;
 }
 
-.buttons-group > div:last-child {
+.buttons-group>div:last-child {
     justify-content: flex-end;
 }
 
 .resize-handle {
-  position: absolute;
+    position: absolute;
+}
+
+.navigation-button {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.navigation-button.right {
+    right: 0;
 }
