@@ -28,7 +28,7 @@ export class HotspotDrawingDirective implements OnChanges {
   private hasDragged = false;
   private isDrawingEnabled = true;
 
-  constructor(private el: ElementRef<HTMLCanvasElement>, private imageService: ImageService, private renderer: Renderer2) { }
+  constructor(private el: ElementRef<HTMLCanvasElement>, private imageService: ImageService, private renderer: Renderer2) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['image']) {
@@ -37,6 +37,7 @@ export class HotspotDrawingDirective implements OnChanges {
     if (changes['mode']) {
       this.clearDeleteButtons();
       this.drawExistingHotspots();
+      this.setCursorStyle(null);
     }
   }
 
@@ -89,7 +90,10 @@ export class HotspotDrawingDirective implements OnChanges {
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
-    if (this.mode === 'play') return;
+    if (this.mode === 'play') {
+      this.setCursorStyle(event);
+      return;
+    }
 
     if (!this.isDrawing && !this.isDragging && !this.isResizing) {
       this.setCursorStyle(event);
@@ -219,23 +223,32 @@ export class HotspotDrawingDirective implements OnChanges {
     }
   }
 
-  private setCursorStyle(event: MouseEvent) {
+  private setCursorStyle(event: MouseEvent | null) {
     const canvas = this.el.nativeElement;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    if (event) {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
 
-    if (this.mode === 'build') {
-      if (this.getResizeHandleAtPosition(x, y) !== null) {
-        this.renderer.setStyle(canvas, 'cursor', 'nwse-resize');
-      } else if (this.getHotspotAtPosition(x, y) !== null) {
-        this.renderer.setStyle(canvas, 'cursor', 'pointer');
+      if (this.mode === 'build') {
+        if (this.getResizeHandleAtPosition(x, y) !== null) {
+          this.renderer.setStyle(canvas, 'cursor', 'nwse-resize');
+        } else if (this.getHotspotAtPosition(x, y) !== null) {
+          this.renderer.setStyle(canvas, 'cursor', 'pointer');
+        } else {
+          this.renderer.setStyle(canvas, 'cursor', 'crosshair');
+        }
       } else {
-        this.renderer.setStyle(canvas, 'cursor', 'default');
+        if (this.getHotspotAtPosition(x, y) !== null) {
+          this.renderer.setStyle(canvas, 'cursor', 'pointer');
+        } else {
+          this.renderer.setStyle(canvas, 'cursor', 'default');
+        }
       }
     } else {
-      if (this.getHotspotAtPosition(x, y) !== null) {
-        this.renderer.setStyle(canvas, 'cursor', 'pointer');
+      // When mode changes
+      if (this.mode === 'build') {
+        this.renderer.setStyle(canvas, 'cursor', 'crosshair');
       } else {
         this.renderer.setStyle(canvas, 'cursor', 'default');
       }
